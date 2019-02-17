@@ -264,7 +264,13 @@ public class MapasFragment extends Fragment implements OnMapReadyCallback {
                                 jso = new JSONObject(response);
                                 Toast.makeText(getActivity().getApplicationContext(),jso.toString(), Toast.LENGTH_LONG).show();
 
+                                //armo la ruta
                                 trazarRuta(jso);
+
+                                //muestro la distancia y el tiempo requerido
+                                mostrarDistanciaTiempo(jso);
+
+                                //
                                 Log.i("jsonRuta: ",""+response);
 
                             } catch (JSONException e) {
@@ -328,10 +334,15 @@ public class MapasFragment extends Fragment implements OnMapReadyCallback {
         JSONArray jLegs;
         JSONArray jSteps;
 
+        //ver https://developers.google.com/maps/documentation/directions/intro
+        //ver https://stackoverflow.com/questions/14708935/how-to-get-json-array-values-in-android
+
         try {
+            //getjson array accede al subarray de routes
             jRoutes = jso.getJSONArray("routes");
             for (int i=0; i<jRoutes.length();i++){
 
+                //accedo a la lista de pasos
                 jLegs = ((JSONObject)(jRoutes.get(i))).getJSONArray("legs");
 
                 for (int j=0; j<jLegs.length();j++){
@@ -345,23 +356,33 @@ public class MapasFragment extends Fragment implements OnMapReadyCallback {
                         Log.i("end",""+polyline);
                         List<LatLng> list = PolyUtil.decode(polyline);
                         map.addPolyline(new PolylineOptions().addAll(list).color(Color.RED).width(10));
-
-
-
                     }
-
-
-
                 }
-
-
-
             }
-
-        } catch (JSONException e) {
+        }
+        catch (JSONException e)
+        {
             e.printStackTrace();
         }
 
+    }
+
+    private void mostrarDistanciaTiempo(JSONObject jso)
+    {
+        try {
+
+            JSONArray tiempo = jso.getJSONArray("duration");
+            JSONArray distancia = jso.getJSONArray("distance");
+            //to-do ver como acceder
+            //String t = tiempo["value"];
+
+
+
+        }
+        catch (JSONException e)
+        {
+            e.printStackTrace();
+        }
     }
 
 
