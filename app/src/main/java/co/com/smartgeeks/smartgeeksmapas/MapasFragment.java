@@ -60,28 +60,57 @@ public class MapasFragment extends Fragment implements OnMapReadyCallback {
 
     public MapasFragment() {
         // Required empty public constructor
+
         //seteo por defecto las banderas booleanas
         //por defecto marca caminando
         this.caminando = true;
         //seteo a false ir manejando
         this.manejando = false;
+
+        //seteo el origen y destino
+        //como que estoy en el ingreso de universidad
+        this.longitudDestino = -31.640771;
+        this.latitudDestino  = -60.671849;
+        this.longitudOrigen = this.longitudDestino;
+        this.latitudOrigen  = this.latitudDestino;
+
+        //seteo la url
+        this.url = "";
     }
 
     //banderas booleanadas para elegir si va manejando o caminando
     private boolean caminando;
     private boolean manejando;
 
+    GoogleMap map;
+    Boolean actualPosition = true;
+    JSONObject jso;
+
+    //coord de origen
+    Double longitudOrigen, latitudOrigen;
+    //coord de destino
+    Double longitudDestino,latitudDestino;
+    //url
+    String url;
+
     public void setCaminando()
     {
         this.caminando = true;
         this.manejando = false;
+        //String salida = "c:" + String.valueOf(this.caminando) + " m:" + String.valueOf(this.manejando);
+        String url = obtenerURL();
+        Toast.makeText(getActivity().getApplicationContext(),url, Toast.LENGTH_LONG).show();
     }
 
     public void setManejando()
     {
         this.caminando = false;
         this.manejando = true;
+        //String salida = "c:" + String.valueOf(this.caminando) + " m:" + String.valueOf(this.manejando);
+        String url = obtenerURL();
+        Toast.makeText(getActivity().getApplicationContext(),url, Toast.LENGTH_LONG).show();
     }
+
 
 
     /**
@@ -150,12 +179,6 @@ public class MapasFragment extends Fragment implements OnMapReadyCallback {
         mListener = null;
     }
 
-
-    GoogleMap map;
-    Boolean actualPosition = true;
-    JSONObject jso;
-    Double longitudOrigen, latitudOrigen;
-
     @Override
     public void onMapReady(GoogleMap googleMap) {
 
@@ -202,8 +225,6 @@ public class MapasFragment extends Fragment implements OnMapReadyCallback {
 
             return;
         }
-
-
         map.setMyLocationEnabled(true);
         map.setOnMyLocationChangeListener(new GoogleMap.OnMyLocationChangeListener() {
             @Override
@@ -227,36 +248,14 @@ public class MapasFragment extends Fragment implements OnMapReadyCallback {
                             .bearing(90)// Sets the zoom
                             .build();                   // Creates a CameraPosition from the builder
                     map.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
-                    //LA URL PARA CONSULTAR AL WEBSERVICE SE USAR COMO SE VE:
-                    //ORIGIN
-                    //DESTINATION
-                    //KEY
-                    //SON PARAMETROS
-                    //SI SE PONE EN EL BROWSER TE MUESTRA LA RESPUESTA JSON O LOS ERRORES
-                    String key = "&key=" + "AIzaSyBXD5pYoMozTOE2fqGe_axUHunFZDXvA2U";
 
-                    String modo;
-                    //segun la bandera booleana
-                    //si caminando = true, muestro recorrido caminando
-                    //si caminando = false, muestro recorrido manejando
-                    if(caminando)
-                    {
-                        modo = "&mode=" + "walking";
-                    }
-                    else
-                    {
-                        modo = "&mode=" + "driving";
-                    }
-
-                    //armo la url
-                    String url ="https://maps.googleapis.com/maps/api/directions/json?origin="+latitudOrigen+","+longitudOrigen+"&destination=-31.640771, -60.671849"+ key + modo;
-
-                    Toast.makeText(getActivity().getApplicationContext(),modo, Toast.LENGTH_LONG).show();
+                    //obtengo la ruta
+                    String url = obtenerURL();
 
                     RequestQueue queue = Volley.newRequestQueue(getActivity());
 
                     map.addMarker(new MarkerOptions().position(new LatLng(-31.640771,-60.671849)).title("Destino"));
-                    url="";
+
                     StringRequest stringRequest = new StringRequest(Request.Method.GET, url, new Response.Listener<String>() {
                         @Override
                         public void onResponse(String response) {
@@ -286,9 +285,41 @@ public class MapasFragment extends Fragment implements OnMapReadyCallback {
                 }
             }
         });
+    }
 
+    private String obtenerURL()
+    {
+        //LA URL PARA CONSULTAR AL WEBSERVICE SE USAR COMO SE VE:
+        //ORIGIN
+        //DESTINATION
+        //KEY
+        //SON PARAMETROS
+        //SI SE PONE EN EL BROWSER TE MUESTRA LA RESPUESTA JSON O LOS ERRORES
+        String key = "&key=" + "AIzaSyBXD5pYoMozTOE2fqGe_axUHunFZDXvA2U";
 
+        String modo;
+        //segun la bandera booleana
+        //si caminando = true, muestro recorrido caminando
+        //si caminando = false, muestro recorrido manejando
+        if(caminando)
+        {
+            modo = "&mode=" + "walking";
+        }
+        else
+        {
+            modo = "&mode=" + "driving";
+        }
+        String origen =  this.latitudOrigen  + "," + this.longitudOrigen;
+        String destino = this.latitudDestino + "," + this.longitudDestino;
+        //armo la url
+        String url ="https://maps.googleapis.com/maps/api/directions/json?origin="+ origen +"&destination=" + destino + key + modo;
 
+        //guardo la url
+        this.url = url;
+
+//      Toast.makeText(getActivity().getApplicationContext(),modo, Toast.LENGTH_LONG).show();
+
+        return url;
     }
 
     private void trazarRuta(JSONObject jso) {

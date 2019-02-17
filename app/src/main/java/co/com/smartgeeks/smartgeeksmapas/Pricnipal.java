@@ -34,7 +34,7 @@ public class Pricnipal extends AppCompatActivity implements MapasFragment.OnFrag
     public void irCaminando(android.view.View view)
     {
         this.mapa.setCaminando();
-        Toast.makeText(this,"CLICK IR CAMINANDO", Toast.LENGTH_LONG).show();
+        //Toast.makeText(this,"CLICK IR CAMINANDO", Toast.LENGTH_LONG).show();
         //this.caminando = true;
         //this.manejando = false;
 
@@ -46,6 +46,6 @@ public class Pricnipal extends AppCompatActivity implements MapasFragment.OnFrag
         this.mapa.setManejando();
         //this.caminando = false;
         //this.manejando = true;
-        Toast.makeText(this,"CLICK IR MANEJANDO", Toast.LENGTH_LONG).show();
+        //Toast.makeText(this,"CLICK IR MANEJANDO", Toast.LENGTH_LONG).show();
     }
 }
