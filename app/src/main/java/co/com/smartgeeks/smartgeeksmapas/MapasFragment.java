@@ -331,7 +331,12 @@ public class MapasFragment extends Fragment implements OnMapReadyCallback {
                                 jso = new JSONObject(response);
                                 //Toast.makeText(getActivity().getApplicationContext(),jso.toString(), Toast.LENGTH_LONG).show();
 
+                                //trazo
                                 trazarRuta(jso);
+
+                                //muestro
+                                mostrarDistanciaTiempo(jso);
+
                                 Log.i("jsonRuta: ",""+response);
 
                             }
@@ -358,6 +363,32 @@ public class MapasFragment extends Fragment implements OnMapReadyCallback {
 
     }
 
+    private void mostrarDistanciaTiempo(JSONObject jso)
+    {
+        try
+        {
+            JSONArray jRoutes = jso.getJSONArray("routes");
+
+            JSONObject routes = jRoutes.getJSONObject(0);
+
+            JSONArray legs = routes.getJSONArray("legs");
+
+            JSONObject steps = legs.getJSONObject(0);
+
+            JSONObject distance = steps.getJSONObject("distance");
+
+            JSONObject tiempo = steps.getJSONObject("duration");
+
+            String mensaje = "La distancia es " + distance.get("text") + "\n" + "Tiempo estimado :" + tiempo.get("text");
+
+            Toast.makeText(getActivity().getApplicationContext(),mensaje, Toast.LENGTH_LONG).show();
+
+        }
+        catch(JSONException e) {
+            e.printStackTrace();
+        }
+    }
+
     private void trazarRuta(JSONObject jso) {
 
         JSONArray jRoutes;
@@ -366,39 +397,30 @@ public class MapasFragment extends Fragment implements OnMapReadyCallback {
 
         try {
             jRoutes = jso.getJSONArray("routes");
-            for (int i=0; i<jRoutes.length();i++){
+            for (int i = 0; i < jRoutes.length(); i++) {
 
-                jLegs = ((JSONObject)(jRoutes.get(i))).getJSONArray("legs");
+                jLegs = ((JSONObject) (jRoutes.get(i))).getJSONArray("legs");
 
-                for (int j=0; j<jLegs.length();j++){
+                for (int j = 0; j < jLegs.length(); j++) {
 
-                    jSteps = ((JSONObject)jLegs.get(j)).getJSONArray("steps");
+                    jSteps = ((JSONObject) jLegs.get(j)).getJSONArray("steps");
 
-                    for (int k = 0; k<jSteps.length();k++){
+                    for (int k = 0; k < jSteps.length(); k++) {
 
 
-                        String polyline = ""+((JSONObject)((JSONObject)jSteps.get(k)).get("polyline")).get("points");
-                        Log.i("end",""+polyline);
+                        String polyline = "" + ((JSONObject) ((JSONObject) jSteps.get(k)).get("polyline")).get("points");
+                        Log.i("end", "" + polyline);
                         List<LatLng> list = PolyUtil.decode(polyline);
                         map.addPolyline(new PolylineOptions().addAll(list).color(Color.RED).width(10));
-
-
-
                     }
-
-
-
                 }
-
-
-
             }
-
         } catch (JSONException e) {
             e.printStackTrace();
         }
-
     }
+
+
 
 
     @Override
