@@ -358,9 +358,6 @@ public class MapasFragment extends Fragment implements OnMapReadyCallback {
                 }
             }
         });
-
-
-
     }
 
     private void mostrarDistanciaTiempo(JSONObject jso)
@@ -379,7 +376,14 @@ public class MapasFragment extends Fragment implements OnMapReadyCallback {
 
             JSONObject tiempo = steps.getJSONObject("duration");
 
-            String mensaje = "La distancia es " + distance.get("text") + "\n" + "Tiempo estimado :" + tiempo.get("text");
+            String aux =  tiempo.get("text").toString();
+
+            String h = aux.replace("hour","hora");
+            String m = h.replace("mins","min.");
+
+
+            String mensaje = "La distancia es " + distance.get("text") + "\n" + "Tiempo estimado :" + m ;
+
 
             Toast.makeText(getActivity().getApplicationContext(),mensaje, Toast.LENGTH_LONG).show();
 
