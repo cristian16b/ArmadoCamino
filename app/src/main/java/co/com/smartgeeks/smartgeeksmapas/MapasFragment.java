@@ -61,56 +61,102 @@ public class MapasFragment extends Fragment implements OnMapReadyCallback {
     public MapasFragment() {
         // Required empty public constructor
 
-        //seteo por defecto las banderas booleanas
-        //por defecto marca caminando
-        this.caminando = true;
-        //seteo a false ir manejando
-        this.manejando = false;
-
-        //seteo el origen y destino
-        //como que estoy en el ingreso de universidad
-        this.longitudDestino = -31.640771;
-        this.latitudDestino  = -60.671849;
-        this.longitudOrigen = this.longitudDestino;
-        this.latitudOrigen  = this.latitudDestino;
-
-        //seteo la url
-        this.url = "";
     }
 
     //banderas booleanadas para elegir si va manejando o caminando
     private boolean caminando;
     private boolean manejando;
 
-    GoogleMap map;
-    Boolean actualPosition = true;
-    JSONObject jso;
+    public void setCaminando() {
+        //onMapReady(this.map);
+        String key = "&key=" + "AIzaSyBTBdT2WvkMH6co1uSxe8frGhwU3QmsBDk";
 
-    //coord de origen
-    Double longitudOrigen, latitudOrigen;
-    //coord de destino
-    Double longitudDestino,latitudDestino;
-    //url
-    String url;
+        String modo;
+        //segun la bandera booleana
+        //si caminando = true, muestro recorrido caminando
+        //si caminando = false, muestro recorrido manejando
+        modo = "&mode=" + "walking";
 
-    public void setCaminando()
-    {
-        this.caminando = true;
-        this.manejando = false;
-        //String salida = "c:" + String.valueOf(this.caminando) + " m:" + String.valueOf(this.manejando);
-        String url = obtenerURL();
-        Toast.makeText(getActivity().getApplicationContext(),url, Toast.LENGTH_LONG).show();
+        //armo la url
+        String url ="https://maps.googleapis.com/maps/api/directions/json?origin="+latitudOrigen+","+longitudOrigen+"&destination=-31.640771, -60.671849"+ key + modo;
+
+        //Toast.makeText(getActivity().getApplicationContext(),modo, Toast.LENGTH_LONG).show();
+
+        // Instantiate the RequestQueue.
+        RequestQueue queue = Volley.newRequestQueue(getActivity());
+
+        // Request a string response from the provided URL.
+        StringRequest stringRequest = new StringRequest(Request.Method.GET, url,
+                new Response.Listener<String>() {
+                    @Override
+                    public void onResponse(String response) {
+                        try {
+                            jso = new JSONObject(response);
+                            //Toast.makeText(getActivity().getApplicationContext(),jso.toString(), Toast.LENGTH_LONG).show();
+
+                            trazarRuta(jso);
+                            Log.i("jsonRuta manejando: ",""+response);
+                        }
+                        catch (JSONException e) {
+                            e.printStackTrace();
+                            Toast.makeText(getActivity().getApplicationContext(), "ERROR DE CONEXIÓN", Toast.LENGTH_LONG).show();
+
+                        }
+
+                    }
+                }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+            }
+        });
+
+        // Add the request to the RequestQueue.
+        queue.add(stringRequest);
+
     }
 
     public void setManejando()
     {
-        this.caminando = false;
-        this.manejando = true;
-        //String salida = "c:" + String.valueOf(this.caminando) + " m:" + String.valueOf(this.manejando);
-        String url = obtenerURL();
-        Toast.makeText(getActivity().getApplicationContext(),url, Toast.LENGTH_LONG).show();
-    }
 
+        String key = "&key=" + "AIzaSyBTBdT2WvkMH6co1uSxe8frGhwU3QmsBDk";
+
+        String modo = "&mode=driving";
+
+        //armo la url
+        String url ="https://maps.googleapis.com/maps/api/directions/json?origin="+latitudOrigen+","+longitudOrigen+"&destination=-31.640771, -60.671849"+ key + modo;
+
+        // Instantiate the RequestQueue.
+        RequestQueue queue = Volley.newRequestQueue(getActivity());
+
+        // Request a string response from the provided URL.
+        StringRequest stringRequest = new StringRequest(Request.Method.GET, url,
+                new Response.Listener<String>() {
+                    @Override
+                    public void onResponse(String response) {
+                        try {
+                            jso = new JSONObject(response);
+                            //Toast.makeText(getActivity().getApplicationContext(),jso.toString(), Toast.LENGTH_LONG).show();
+
+                            trazarRuta(jso);
+                            Log.i("jsonRuta manejando: ",""+response);
+                        }
+                        catch (JSONException e) {
+                            e.printStackTrace();
+                            Toast.makeText(getActivity().getApplicationContext(), "ERROR DE CONEXIÓN", Toast.LENGTH_LONG).show();
+
+                        }
+
+                    }
+                }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+            }
+        });
+
+// Add the request to the RequestQueue.
+        queue.add(stringRequest);
+
+    }
 
 
     /**
@@ -179,6 +225,12 @@ public class MapasFragment extends Fragment implements OnMapReadyCallback {
         mListener = null;
     }
 
+
+    GoogleMap map;
+    Boolean actualPosition = true;
+    JSONObject jso;
+    Double longitudOrigen, latitudOrigen;
+
     @Override
     public void onMapReady(GoogleMap googleMap) {
 
@@ -188,7 +240,7 @@ public class MapasFragment extends Fragment implements OnMapReadyCallback {
         if (ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
 
 
-           if (ActivityCompat.shouldShowRequestPermissionRationale(getActivity(),
+            if (ActivityCompat.shouldShowRequestPermissionRationale(getActivity(),
                     Manifest.permission.ACCESS_COARSE_LOCATION)) {
                 // Show an explanation to the user *asynchronously* -- don't block
                 // this thread waiting for the user's response! After the user
@@ -225,6 +277,8 @@ public class MapasFragment extends Fragment implements OnMapReadyCallback {
 
             return;
         }
+
+
         map.setMyLocationEnabled(true);
         map.setOnMyLocationChangeListener(new GoogleMap.OnMyLocationChangeListener() {
             @Override
@@ -248,32 +302,40 @@ public class MapasFragment extends Fragment implements OnMapReadyCallback {
                             .bearing(90)// Sets the zoom
                             .build();                   // Creates a CameraPosition from the builder
                     map.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
+                    //LA URL PARA CONSULTAR AL WEBSERVICE SE USAR COMO SE VE:
+                    //ORIGIN
+                    //DESTINATION
+                    //KEY
+                    //SON PARAMETROS
+                    //SI SE PONE EN EL BROWSER TE MUESTRA LA RESPUESTA JSON O LOS ERRORES
+                    String key = "&key=" + "AIzaSyBTBdT2WvkMH6co1uSxe8frGhwU3QmsBDk";
 
-                    //obtengo la ruta
-                    String url = obtenerURL();
+                    String modo;
+                    //segun la bandera booleana
+                    //si caminando = true, muestro recorrido caminando
+                    //si caminando = false, muestro recorrido manejando
+                    modo = "&mode=" + "walking";
+
+                    //armo la url
+                    String url ="https://maps.googleapis.com/maps/api/directions/json?origin="+latitudOrigen+","+longitudOrigen+"&destination=-31.640771, -60.671849"+ key + modo;
+
+                    //Toast.makeText(getActivity().getApplicationContext(),modo, Toast.LENGTH_LONG).show();
 
                     RequestQueue queue = Volley.newRequestQueue(getActivity());
-
                     map.addMarker(new MarkerOptions().position(new LatLng(-31.640771,-60.671849)).title("Destino"));
-
                     StringRequest stringRequest = new StringRequest(Request.Method.GET, url, new Response.Listener<String>() {
                         @Override
                         public void onResponse(String response) {
 
                             try {
                                 jso = new JSONObject(response);
-                                Toast.makeText(getActivity().getApplicationContext(),jso.toString(), Toast.LENGTH_LONG).show();
+                                //Toast.makeText(getActivity().getApplicationContext(),jso.toString(), Toast.LENGTH_LONG).show();
 
-                                //armo la ruta
                                 trazarRuta(jso);
-
-                                //muestro la distancia y el tiempo requerido
-                                mostrarDistanciaTiempo(jso);
-
-                                //
                                 Log.i("jsonRuta: ",""+response);
 
-                            } catch (JSONException e) {
+                            }
+                            catch (JSONException e) {
                                 e.printStackTrace();
                                 Toast.makeText(getActivity().getApplicationContext(), "ERROR DE CONEXIÓN", Toast.LENGTH_LONG).show();
 
@@ -291,41 +353,9 @@ public class MapasFragment extends Fragment implements OnMapReadyCallback {
                 }
             }
         });
-    }
 
-    private String obtenerURL()
-    {
-        //LA URL PARA CONSULTAR AL WEBSERVICE SE USAR COMO SE VE:
-        //ORIGIN
-        //DESTINATION
-        //KEY
-        //SON PARAMETROS
-        //SI SE PONE EN EL BROWSER TE MUESTRA LA RESPUESTA JSON O LOS ERRORES
-        String key = "&key=" + "AIzaSyBXD5pYoMozTOE2fqGe_axUHunFZDXvA2U";
 
-        String modo;
-        //segun la bandera booleana
-        //si caminando = true, muestro recorrido caminando
-        //si caminando = false, muestro recorrido manejando
-        if(caminando)
-        {
-            modo = "&mode=" + "walking";
-        }
-        else
-        {
-            modo = "&mode=" + "driving";
-        }
-        String origen =  this.latitudOrigen  + "," + this.longitudOrigen;
-        String destino = this.latitudDestino + "," + this.longitudDestino;
-        //armo la url
-        String url ="https://maps.googleapis.com/maps/api/directions/json?origin="+ origen +"&destination=" + destino + key + modo;
 
-        //guardo la url
-        this.url = url;
-
-//      Toast.makeText(getActivity().getApplicationContext(),modo, Toast.LENGTH_LONG).show();
-
-        return url;
     }
 
     private void trazarRuta(JSONObject jso) {
@@ -334,15 +364,10 @@ public class MapasFragment extends Fragment implements OnMapReadyCallback {
         JSONArray jLegs;
         JSONArray jSteps;
 
-        //ver https://developers.google.com/maps/documentation/directions/intro
-        //ver https://stackoverflow.com/questions/14708935/how-to-get-json-array-values-in-android
-
         try {
-            //getjson array accede al subarray de routes
             jRoutes = jso.getJSONArray("routes");
             for (int i=0; i<jRoutes.length();i++){
 
-                //accedo a la lista de pasos
                 jLegs = ((JSONObject)(jRoutes.get(i))).getJSONArray("legs");
 
                 for (int j=0; j<jLegs.length();j++){
@@ -356,33 +381,23 @@ public class MapasFragment extends Fragment implements OnMapReadyCallback {
                         Log.i("end",""+polyline);
                         List<LatLng> list = PolyUtil.decode(polyline);
                         map.addPolyline(new PolylineOptions().addAll(list).color(Color.RED).width(10));
+
+
+
                     }
+
+
+
                 }
+
+
+
             }
-        }
-        catch (JSONException e)
-        {
+
+        } catch (JSONException e) {
             e.printStackTrace();
         }
 
-    }
-
-    private void mostrarDistanciaTiempo(JSONObject jso)
-    {
-        try {
-
-            JSONArray tiempo = jso.getJSONArray("duration");
-            JSONArray distancia = jso.getJSONArray("distance");
-            //to-do ver como acceder
-            //String t = tiempo["value"];
-
-
-
-        }
-        catch (JSONException e)
-        {
-            e.printStackTrace();
-        }
     }
 
 
